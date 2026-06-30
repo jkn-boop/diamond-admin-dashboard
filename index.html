@@ -639,254 +639,342 @@
       ============================================================
     */
 
-    const CONFIG = {
-      WEB_APP_URL: "https://script.google.com/macros/s/AKfycbxk5ITXyRMBMUkd5hL-Xq6QKdEvtgjHaihORahAr8sf2xAYhf_tj6POdLs-wbyXCik/exec", // nanti isi URL Apps Script dashboard di sini
-      AUTO_REFRESH_MS: 10000
-    };
+    <script>
+  const CONFIG = {
+    WEB_APP_URL: "https://script.google.com/macros/s/AKfycbxk5ITXyRMBMUkd5hL-Xq6QKdEvtgjHaihORahAr8sf2xAYhf_tj6POdLs-wbyXCik/exec",
+    AUTO_REFRESH_MS: 10000
+  };
 
-    const demoData = {
-      tanggal: "01/07/2026",
-      updatedAt: "",
-      staff: [
-        {
-          nama: "INDRA",
-          operator: "INDRA",
-          shift: "PAGI",
-          status: "HADIR",
-          waktu: "08:01",
-          website: "POMPA88",
-          sudahAbsen: true
-        },
-        {
-          nama: "BUDI",
-          operator: "BUDI",
-          shift: "PAGI",
-          status: "HADIR",
-          waktu: "08:05",
-          website: "BOLA86",
-          sudahAbsen: true
-        },
-        {
-          nama: "RINA",
-          operator: "RINA",
-          shift: "MALAM",
-          status: "BELUM ABSEN",
-          waktu: "-",
-          website: "-",
-          sudahAbsen: false
-        },
-        {
-          nama: "YOGA",
-          operator: "CS5BOLA",
-          shift: "TENGAH",
-          status: "HADIR",
-          waktu: "15:42",
-          website: "BOLA86",
-          sudahAbsen: true
-        },
-        {
-          nama: "PUTRA",
-          operator: "CS1KOKO",
-          shift: "TENGAH",
-          status: "BELUM ABSEN",
-          waktu: "-",
-          website: "-",
-          sudahAbsen: false
-        }
-      ]
-    };
+  let currentData = {
+    ok: true,
+    staff: [],
+    updatedAt: ""
+  };
 
-    let currentData = demoData;
+  let isLoading = false;
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getInitial(name) {
+    return String(name || "?").trim().charAt(0).toUpperCase();
+  }
+
+  function updateModeBadge(mode) {
+    const badge = document.querySelector(".live-badge");
+    if (!badge) return;
+
+    if (mode === "LIVE") {
+      badge.innerHTML = `<span class="dot"></span> LIVE DATA`;
+    } else if (mode === "ERROR") {
+      badge.innerHTML = `<span class="dot"></span> ERROR DATA`;
+    } else {
+      badge.innerHTML = `<span class="dot"></span> LOADING`;
+    }
+  }
+
+  function statusBadge(item) {
+    if (!item.sudahAbsen) {
+      return `<span class="pill pill-belum">● BELUM</span>`;
     }
 
-    function getInitial(name) {
-      return String(name || "?").trim().charAt(0).toUpperCase();
+    const status = String(item.status || "").toUpperCase();
+
+    if (
+      status.includes("OFF") ||
+      status.includes("SAKIT") ||
+      status.includes("IZIN") ||
+      status.includes("CUTI")
+    ) {
+      return `<span class="pill pill-off">● ${escapeHtml(item.status)}</span>`;
     }
 
-    function statusBadge(item) {
-      if (!item.sudahAbsen) {
-        return `<span class="pill pill-belum">● BELUM</span>`;
-      }
+    return `<span class="pill pill-hadir">● ${escapeHtml(item.status || "HADIR")}</span>`;
+  }
 
-      const status = String(item.status || "").toUpperCase();
+  function shiftBadge(shift) {
+    return `<span class="pill pill-shift">${escapeHtml(shift || "-")}</span>`;
+  }
 
-      if (status.includes("OFF") || status.includes("SAKIT")) {
-        return `<span class="pill pill-off">● ${escapeHtml(item.status)}</span>`;
-      }
+  function updateClock() {
+    const now = new Date();
 
-      return `<span class="pill pill-hadir">● ${escapeHtml(item.status || "HADIR")}</span>`;
-    }
+    const text = now.toLocaleString("id-ID", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
 
-    function shiftBadge(shift) {
-      return `<span class="pill pill-shift">${escapeHtml(shift || "-")}</span>`;
-    }
+    document.getElementById("clockText").textContent = text;
+  }
 
-    function updateClock() {
-      const now = new Date();
+  function updateStats(staff) {
+    const total = staff.length;
+    const totalSudah = staff.filter(x => x.sudahAbsen).length;
+    const totalBelum = total - totalSudah;
+    const persen = total > 0 ? Math.round((totalSudah / total) * 100) : 0;
 
-      const text = now.toLocaleString("id-ID", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      });
+    document.getElementById("totalStaff").textContent = total;
+    document.getElementById("totalSudah").textContent = totalSudah;
+    document.getElementById("totalBelum").textContent = totalBelum;
+    document.getElementById("persenHadir").textContent = persen + "%";
 
-      document.getElementById("clockText").textContent = text;
-    }
+    document.getElementById("progressText").textContent = `${totalSudah} dari ${total} staff`;
+    document.getElementById("progressFill").style.width = persen + "%";
+  }
 
-    function updateStats(staff) {
-      const total = staff.length;
-      const totalSudah = staff.filter(x => x.sudahAbsen).length;
-      const totalBelum = total - totalSudah;
-      const persen = total > 0 ? Math.round((totalSudah / total) * 100) : 0;
+  function getFilteredStaff() {
+    const keyword = document.getElementById("searchInput").value.trim().toUpperCase();
+    const shift = document.getElementById("shiftFilter").value;
+    const status = document.getElementById("statusFilter").value;
 
-      document.getElementById("totalStaff").textContent = total;
-      document.getElementById("totalSudah").textContent = totalSudah;
-      document.getElementById("totalBelum").textContent = totalBelum;
-      document.getElementById("persenHadir").textContent = persen + "%";
+    return currentData.staff.filter(item => {
+      const text = `${item.nama} ${item.operator} ${item.shift} ${item.status} ${item.website}`.toUpperCase();
 
-      document.getElementById("progressText").textContent = `${totalSudah} dari ${total} staff`;
-      document.getElementById("progressFill").style.width = persen + "%";
-    }
+      const matchKeyword = !keyword || text.includes(keyword);
+      const matchShift = shift === "ALL" || String(item.shift || "").toUpperCase() === shift;
+      const matchStatus =
+        status === "ALL" ||
+        (status === "SUDAH" && item.sudahAbsen) ||
+        (status === "BELUM" && !item.sudahAbsen);
 
-    function getFilteredStaff() {
-      const keyword = document.getElementById("searchInput").value.trim().toUpperCase();
-      const shift = document.getElementById("shiftFilter").value;
-      const status = document.getElementById("statusFilter").value;
+      return matchKeyword && matchShift && matchStatus;
+    });
+  }
 
-      return currentData.staff.filter(item => {
-        const text = `${item.nama} ${item.operator} ${item.shift} ${item.status} ${item.website}`.toUpperCase();
+  function renderMainTable(staff) {
+    const tbody = document.getElementById("mainTable");
 
-        const matchKeyword = !keyword || text.includes(keyword);
-        const matchShift = shift === "ALL" || String(item.shift || "").toUpperCase() === shift;
-        const matchStatus =
-          status === "ALL" ||
-          (status === "SUDAH" && item.sudahAbsen) ||
-          (status === "BELUM" && !item.sudahAbsen);
-
-        return matchKeyword && matchShift && matchStatus;
-      });
-    }
-
-    function renderMainTable(staff) {
-      const tbody = document.getElementById("mainTable");
-
-      if (!staff.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="empty">Tidak ada data yang cocok dengan filter.</td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = staff.map(item => `
+    if (!staff.length) {
+      tbody.innerHTML = `
         <tr>
-          <td>
-            <div class="name-cell">
-              <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
-              <span>${escapeHtml(item.nama)}</span>
-            </div>
-          </td>
-          <td>${escapeHtml(item.operator || "-")}</td>
-          <td>${shiftBadge(item.shift)}</td>
-          <td>${statusBadge(item)}</td>
-          <td>${escapeHtml(item.waktu || "-")}</td>
-          <td>${escapeHtml(item.website || "-")}</td>
+          <td colspan="6" class="empty">Tidak ada data yang cocok dengan filter.</td>
         </tr>
-      `).join("");
+      `;
+      return;
     }
 
-    function renderMiniLists(staff) {
-      const sudah = staff.filter(x => x.sudahAbsen);
-      const belum = staff.filter(x => !x.sudahAbsen);
-
-      const sudahBox = document.getElementById("sudahList");
-      const belumBox = document.getElementById("belumList");
-
-      sudahBox.innerHTML = sudah.length ? sudah.map(item => `
-        <div class="mini-item">
-          <div class="mini-left">
+    tbody.innerHTML = staff.map(item => `
+      <tr>
+        <td>
+          <div class="name-cell">
             <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
-            <div>
-              <strong>${escapeHtml(item.nama)}</strong>
-              <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
-            </div>
+            <span>${escapeHtml(item.nama)}</span>
           </div>
-          <div class="mini-time">${escapeHtml(item.waktu || "-")}</div>
-        </div>
-      `).join("") : `<div class="empty">Belum ada staff yang absen.</div>`;
+        </td>
+        <td>${escapeHtml(item.operator || "-")}</td>
+        <td>${shiftBadge(item.shift)}</td>
+        <td>${statusBadge(item)}</td>
+        <td>${escapeHtml(item.waktu || "-")}</td>
+        <td>${escapeHtml(item.website || "-")}</td>
+      </tr>
+    `).join("");
+  }
 
-      belumBox.innerHTML = belum.length ? belum.map(item => `
-        <div class="mini-item">
-          <div class="mini-left">
-            <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
-            <div>
-              <strong>${escapeHtml(item.nama)}</strong>
-              <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
-            </div>
+  function renderMiniLists(staff) {
+    const sudah = staff.filter(x => x.sudahAbsen);
+    const belum = staff.filter(x => !x.sudahAbsen);
+
+    const sudahBox = document.getElementById("sudahList");
+    const belumBox = document.getElementById("belumList");
+
+    sudahBox.innerHTML = sudah.length ? sudah.map(item => `
+      <div class="mini-item">
+        <div class="mini-left">
+          <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
+          <div>
+            <strong>${escapeHtml(item.nama)}</strong>
+            <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
           </div>
-          <div class="mini-time" style="color: var(--red);">BELUM</div>
         </div>
-      `).join("") : `<div class="empty">Semua staff sudah absen.</div>`;
+        <div class="mini-time">${escapeHtml(item.waktu || "-")}</div>
+      </div>
+    `).join("") : `<div class="empty">Belum ada staff yang absen.</div>`;
+
+    belumBox.innerHTML = belum.length ? belum.map(item => `
+      <div class="mini-item">
+        <div class="mini-left">
+          <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
+          <div>
+            <strong>${escapeHtml(item.nama)}</strong>
+            <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
+          </div>
+        </div>
+        <div class="mini-time" style="color: var(--red);">BELUM</div>
+      </div>
+    `).join("") : `<div class="empty">Semua staff sudah absen.</div>`;
+  }
+
+  function updateLastUpdate() {
+    document.getElementById("lastUpdate").textContent =
+      currentData.updatedAt || new Date().toLocaleString("id-ID");
+  }
+
+  function renderDashboard() {
+    const filteredStaff = getFilteredStaff();
+
+    updateStats(currentData.staff);
+    renderMainTable(filteredStaff);
+    renderMiniLists(currentData.staff);
+    updateLastUpdate();
+  }
+
+  function showError(message) {
+    updateModeBadge("ERROR");
+
+    document.getElementById("mainTable").innerHTML = `
+      <tr>
+        <td colspan="6" class="empty">
+          Gagal memuat data dashboard.<br>
+          ${escapeHtml(message)}
+        </td>
+      </tr>
+    `;
+  }
+
+  function normalizeStaffItem(item, sudahAbsenDefault) {
+    const sudahAbsen =
+      typeof item.sudahAbsen === "boolean"
+        ? item.sudahAbsen
+        : Boolean(sudahAbsenDefault);
+
+    return {
+      nama: String(item.nama || item.NAMA || "").trim(),
+      operator: String(item.operator || item.OPERATOR || "").trim(),
+      shift: String(item.shift || item.SHIFT || "").trim(),
+      status: String(item.status || item.STATUS || (sudahAbsen ? "HADIR" : "BELUM ABSEN")).trim(),
+      waktu: String(item.waktu || item.WAKTU || "-").trim(),
+      website: String(item.website || item.WEBSITE || "-").trim(),
+      sudahAbsen: sudahAbsen
+    };
+  }
+
+  function normalizeDashboardData(data) {
+    let staff = [];
+
+    if (Array.isArray(data.staff)) {
+      staff = data.staff.map(item => normalizeStaffItem(item, item.sudahAbsen));
+    } else {
+      const sudah = Array.isArray(data.sudahAbsen) ? data.sudahAbsen : [];
+      const belum = Array.isArray(data.belumAbsen) ? data.belumAbsen : [];
+
+      staff = [
+        ...sudah.map(item => normalizeStaffItem(item, true)),
+        ...belum.map(item => normalizeStaffItem(item, false))
+      ];
     }
 
-    function updateLastUpdate() {
-      const now = new Date();
+    staff = staff.filter(item => item.nama);
 
-      const text = now.toLocaleString("id-ID", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
+    return {
+      ok: data.ok !== false,
+      tanggal: data.tanggal || "",
+      updatedAt: data.updatedAt || "",
+      staff: staff
+    };
+  }
+
+  function jsonpRequest(url, params = {}) {
+    return new Promise((resolve, reject) => {
+      const callbackName =
+        "dgDashboardCallback_" +
+        Date.now() +
+        "_" +
+        Math.random().toString(36).slice(2);
+
+      const query = new URLSearchParams({
+        ...params,
+        callback: callbackName,
+        _: Date.now()
       });
 
-      document.getElementById("lastUpdate").textContent = text;
-    }
+      const separator = url.includes("?") ? "&" : "?";
+      const script = document.createElement("script");
 
-    function renderDashboard() {
-      const filteredStaff = getFilteredStaff();
+      let done = false;
 
-      updateStats(currentData.staff);
-      renderMainTable(filteredStaff);
-      renderMiniLists(currentData.staff);
-      updateLastUpdate();
-    }
+      const timeout = setTimeout(() => {
+        if (done) return;
+        done = true;
+        cleanup();
+        reject(new Error("Request timeout. Apps Script terlalu lama merespons."));
+      }, 15000);
 
-    async function loadDashboardData() {
-      /*
-        Untuk saat ini kita pakai demoData.
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[callbackName];
 
-        Nanti kalau sudah konek Apps Script, bagian ini akan diganti
-        agar mengambil data dari Web App Apps Script.
-      */
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }
 
-      currentData = demoData;
+      window[callbackName] = function(response) {
+        if (done) return;
+        done = true;
+        cleanup();
+        resolve(response);
+      };
+
+      script.onerror = function() {
+        if (done) return;
+        done = true;
+        cleanup();
+        reject(new Error("Tidak bisa menghubungi Apps Script."));
+      };
+
+      script.src = url + separator + query.toString();
+      document.body.appendChild(script);
+    });
+  }
+
+  async function loadDashboardData() {
+    if (isLoading) return;
+
+    isLoading = true;
+    updateModeBadge("LOADING");
+
+    try {
+      const result = await jsonpRequest(CONFIG.WEB_APP_URL, {
+        action: "dashboardAdmin"
+      });
+
+      if (!result || result.ok === false) {
+        throw new Error(result && result.error ? result.error : "Response Apps Script tidak valid.");
+      }
+
+      currentData = normalizeDashboardData(result);
+      updateModeBadge("LIVE");
       renderDashboard();
+
+    } catch (err) {
+      console.error(err);
+      showError(err.message || "Terjadi kesalahan.");
+    } finally {
+      isLoading = false;
     }
+  }
 
-    document.getElementById("searchInput").addEventListener("input", renderDashboard);
-    document.getElementById("shiftFilter").addEventListener("change", renderDashboard);
-    document.getElementById("statusFilter").addEventListener("change", renderDashboard);
+  document.getElementById("searchInput").addEventListener("input", renderDashboard);
+  document.getElementById("shiftFilter").addEventListener("change", renderDashboard);
+  document.getElementById("statusFilter").addEventListener("change", renderDashboard);
 
-    updateClock();
-    loadDashboardData();
+  updateClock();
+  loadDashboardData();
 
-    setInterval(updateClock, 1000);
-    setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
+  setInterval(updateClock, 1000);
+  setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
+</script>
   </script>
 </body>
 </html>
