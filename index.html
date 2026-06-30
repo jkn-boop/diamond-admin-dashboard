@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIAMOND GRUP - Admin Dashboard</title>
+
+  <style>
+    :root {
+      --bg-main: #020b07;
+      --bg-card: rgba(0, 22, 13, 0.88);
+      --bg-card-2: rgba(0, 35, 18, 0.65);
+      --border-green: rgba(124, 255, 0, 0.35);
+      --green: #7cff00;
+      --green-soft: rgba(124, 255, 0, 0.12);
+      --red: #ff4d5d;
+      --red-soft: rgba(255, 77, 93, 0.12);
+      --yellow: #ffd34d;
+      --yellow-soft: rgba(255, 211, 77, 0.13);
+      --blue: #4db8ff;
+      --blue-soft: rgba(77, 184, 255, 0.12);
+      --text-main: #ffffff;
+      --text-muted: #9aa99f;
+      --shadow-green: 0 0 28px rgba(124, 255, 0, 0.18);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top left, rgba(73, 255, 0, 0.22), transparent 32%),
+        radial-gradient(circle at top right, rgba(0, 255, 170, 0.16), transparent 34%),
+        radial-gradient(circle at bottom center, rgba(124, 255, 0, 0.08), transparent 42%),
+        var(--bg-main);
+      padding: 22px;
+    }
+
+    .app {
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #0e3d00, #0b1f12);
+      border: 1px solid var(--border-green);
+      box-shadow: var(--shadow-green);
+      font-size: 26px;
+    }
+
+    .brand-text h1 {
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      color: var(--text-muted);
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-green);
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: var(--shadow-green);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.45; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+      100% { opacity: 0.45; transform: scale(0.9); }
+    }
+
+    .clock-box {
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #dbe7df;
+      font-size: 13px;
+    }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-green);
+      min-height: 136px;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      right: -65px;
+      top: -65px;
+      border-radius: 50%;
+      background: rgba(124, 255, 0, 0.08);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-number {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-desc {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .yellow { color: var(--yellow); }
+    .blue { color: var(--blue); }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(0, 16, 10, 0.92);
+      border: 1px solid rgba(124, 255, 0, 0.25);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-green);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(124, 255, 0, 0.15);
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .panel-title h2 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .panel-title p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .input,
+    .select,
+    .button {
+      border: 1px solid rgba(124, 255, 0, 0.25);
+      background: rgba(0, 0, 0, 0.35);
+      color: #fff;
+      border-radius: 12px;
+      padding: 11px 13px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .input::placeholder {
+      color: #6d7c72;
+    }
+
+    .button {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--green);
+      background: rgba(124, 255, 0, 0.08);
+      transition: 0.2s ease;
+    }
+
+    .button:hover {
+      box-shadow: 0 0 16px rgba(124, 255, 0, 0.22);
+      transform: translateY(-1px);
+    }
+
+    .progress-wrap {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      height: 12px;
+      background: rgba(255,255,255,0.06);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #37b000, #7cff00);
+      border-radius: var(--radius-pill);
+      box-shadow: 0 0 18px rgba(124, 255, 0, 0.45);
+      transition: width 0.4s ease;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      padding: 15px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 700;
+      background: rgba(255,255,255,0.03);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover td {
+      background: rgba(124, 255, 0, 0.035);
+    }
+
+    .name-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(124, 255, 0, 0.12);
+      border: 1px solid rgba(124, 255, 0, 0.28);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pill-hadir {
+      background: var(--green-soft);
+      border: 1px solid rgba(124, 255, 0, 0.35);
+      color: var(--green);
+    }
+
+    .pill-belum {
+      background: var(--red-soft);
+      border: 1px solid rgba(255, 77, 93, 0.35);
+      color: var(--red);
+    }
+
+    .pill-shift {
+      background: var(--blue-soft);
+      border: 1px solid rgba(77, 184, 255, 0.3);
+      color: var(--blue);
+    }
+
+    .pill-off {
+      background: var(--yellow-soft);
+      border: 1px solid rgba(255, 211, 77, 0.34);
+      color: var(--yellow);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-list {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .mini-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mini-left strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .mini-left span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .mini-time {
+      color: var(--green);
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .footer strong {
+      color: var(--green);
+    }
+
+    @media (max-width: 1080px) {
+      .grid-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 14px;
+      }
+
+      .brand-text h1 {
+        font-size: 21px;
+      }
+
+      .logo {
+        width: 48px;
+        height: 48px;
+      }
+
+      .grid-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-card {
+        min-height: 118px;
+      }
+
+      .stat-number {
+        font-size: 35px;
+      }
+
+      .panel-header {
+        align-items: stretch;
+      }
+
+      .controls,
+      .input,
+      .select,
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">💎</div>
+        <div class="brand-text">
+          <h1>DIAMOND GRUP</h1>
+          <p>Admin Dashboard Absensi Staff</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="clock-box" id="clockText">Memuat waktu...</div>
+        <div class="live-badge">
+          <span class="dot"></span>
+          MODE DEMO
+        </div>
+      </div>
+    </header>
+
+    <section class="grid-stats">
+      <div class="stat-card">
+        <div class="stat-label">👥 Total Staff Aktif</div>
+        <div class="stat-number yellow" id="totalStaff">0</div>
+        <div class="stat-desc">Dari daftar STAFF</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">🟢 Sudah Absen</div>
+        <div class="stat-number green" id="totalSudah">0</div>
+        <div class="stat-desc">Data hari ini</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">🔴 Belum Absen</div>
+        <div class="stat-number red" id="totalBelum">0</div>
+        <div class="stat-desc">Belum ada data hari ini</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">📊 Persentase Hadir</div>
+        <div class="stat-number blue" id="persenHadir">0%</div>
+        <div class="stat-desc">Sudah absen / total staff</div>
+      </div>
+    </section>
+
+    <main class="main-layout">
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>📋 Monitoring Absensi Hari Ini</h2>
+            <p>Menampilkan status hadir dan belum absen secara otomatis.</p>
+          </div>
+
+          <div class="controls">
+            <input class="input" id="searchInput" type="text" placeholder="Cari nama/operator..." />
+            <select class="select" id="shiftFilter">
+              <option value="ALL">Semua Shift</option>
+              <option value="PAGI">Pagi</option>
+              <option value="TENGAH">Tengah</option>
+              <option value="MALAM">Malam</option>
+            </select>
+            <select class="select" id="statusFilter">
+              <option value="ALL">Semua Status</option>
+              <option value="SUDAH">Sudah Absen</option>
+              <option value="BELUM">Belum Absen</option>
+            </select>
+            <button class="button" onclick="renderDashboard()">Refresh</button>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span>Progress absensi hari ini</span>
+            <span id="progressText">0 dari 0 staff</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Operator</th>
+                <th>Shift</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Website</th>
+              </tr>
+            </thead>
+            <tbody id="mainTable">
+              <tr>
+                <td colspan="6" class="empty">Memuat data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>🟢 Sudah Absen</h2>
+              <p>Staff yang sudah mengirim absensi.</p>
+            </div>
+          </div>
+          <div class="mini-list" id="sudahList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>🔴 Belum Absen</h2>
+              <p>Staff aktif yang belum tercatat hari ini.</p>
+            </div>
+          </div>
+          <div class="mini-list" id="belumList"></div>
+        </section>
+
+      </aside>
+
+    </main>
+
+    <footer class="footer">
+      Terakhir diperbarui: <strong id="lastUpdate">-</strong><br />
+      Auto refresh tampilan setiap <strong>10 detik</strong>. Saat ini masih mode demo, belum tersambung ke Apps Script.
+    </footer>
+
+  </div>
+
+  <script>
+    /*
+      ============================================================
+      DIAMOND GRUP - ADMIN DASHBOARD
+      Versi ini masih DEMO / tampilan.
+      Nanti jika sudah mau konek Apps Script, isi WEB_APP_URL.
+      ============================================================
+    */
+
+    const CONFIG = {
+      WEB_APP_URL: "", // nanti isi URL Apps Script dashboard di sini
+      AUTO_REFRESH_MS: 10000
+    };
+
+    const demoData = {
+      tanggal: "01/07/2026",
+      updatedAt: "",
+      staff: [
+        {
+          nama: "INDRA",
+          operator: "INDRA",
+          shift: "PAGI",
+          status: "HADIR",
+          waktu: "08:01",
+          website: "POMPA88",
+          sudahAbsen: true
+        },
+        {
+          nama: "BUDI",
+          operator: "BUDI",
+          shift: "PAGI",
+          status: "HADIR",
+          waktu: "08:05",
+          website: "BOLA86",
+          sudahAbsen: true
+        },
+        {
+          nama: "RINA",
+          operator: "RINA",
+          shift: "MALAM",
+          status: "BELUM ABSEN",
+          waktu: "-",
+          website: "-",
+          sudahAbsen: false
+        },
+        {
+          nama: "YOGA",
+          operator: "CS5BOLA",
+          shift: "TENGAH",
+          status: "HADIR",
+          waktu: "15:42",
+          website: "BOLA86",
+          sudahAbsen: true
+        },
+        {
+          nama: "PUTRA",
+          operator: "CS1KOKO",
+          shift: "TENGAH",
+          status: "BELUM ABSEN",
+          waktu: "-",
+          website: "-",
+          sudahAbsen: false
+        }
+      ]
+    };
+
+    let currentData = demoData;
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getInitial(name) {
+      return String(name || "?").trim().charAt(0).toUpperCase();
+    }
+
+    function statusBadge(item) {
+      if (!item.sudahAbsen) {
+        return `<span class="pill pill-belum">● BELUM</span>`;
+      }
+
+      const status = String(item.status || "").toUpperCase();
+
+      if (status.includes("OFF") || status.includes("SAKIT")) {
+        return `<span class="pill pill-off">● ${escapeHtml(item.status)}</span>`;
+      }
+
+      return `<span class="pill pill-hadir">● ${escapeHtml(item.status || "HADIR")}</span>`;
+    }
+
+    function shiftBadge(shift) {
+      return `<span class="pill pill-shift">${escapeHtml(shift || "-")}</span>`;
+    }
+
+    function updateClock() {
+      const now = new Date();
+
+      const text = now.toLocaleString("id-ID", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      document.getElementById("clockText").textContent = text;
+    }
+
+    function updateStats(staff) {
+      const total = staff.length;
+      const totalSudah = staff.filter(x => x.sudahAbsen).length;
+      const totalBelum = total - totalSudah;
+      const persen = total > 0 ? Math.round((totalSudah / total) * 100) : 0;
+
+      document.getElementById("totalStaff").textContent = total;
+      document.getElementById("totalSudah").textContent = totalSudah;
+      document.getElementById("totalBelum").textContent = totalBelum;
+      document.getElementById("persenHadir").textContent = persen + "%";
+
+      document.getElementById("progressText").textContent = `${totalSudah} dari ${total} staff`;
+      document.getElementById("progressFill").style.width = persen + "%";
+    }
+
+    function getFilteredStaff() {
+      const keyword = document.getElementById("searchInput").value.trim().toUpperCase();
+      const shift = document.getElementById("shiftFilter").value;
+      const status = document.getElementById("statusFilter").value;
+
+      return currentData.staff.filter(item => {
+        const text = `${item.nama} ${item.operator} ${item.shift} ${item.status} ${item.website}`.toUpperCase();
+
+        const matchKeyword = !keyword || text.includes(keyword);
+        const matchShift = shift === "ALL" || String(item.shift || "").toUpperCase() === shift;
+        const matchStatus =
+          status === "ALL" ||
+          (status === "SUDAH" && item.sudahAbsen) ||
+          (status === "BELUM" && !item.sudahAbsen);
+
+        return matchKeyword && matchShift && matchStatus;
+      });
+    }
+
+    function renderMainTable(staff) {
+      const tbody = document.getElementById("mainTable");
+
+      if (!staff.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty">Tidak ada data yang cocok dengan filter.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = staff.map(item => `
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
+              <span>${escapeHtml(item.nama)}</span>
+            </div>
+          </td>
+          <td>${escapeHtml(item.operator || "-")}</td>
+          <td>${shiftBadge(item.shift)}</td>
+          <td>${statusBadge(item)}</td>
+          <td>${escapeHtml(item.waktu || "-")}</td>
+          <td>${escapeHtml(item.website || "-")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderMiniLists(staff) {
+      const sudah = staff.filter(x => x.sudahAbsen);
+      const belum = staff.filter(x => !x.sudahAbsen);
+
+      const sudahBox = document.getElementById("sudahList");
+      const belumBox = document.getElementById("belumList");
+
+      sudahBox.innerHTML = sudah.length ? sudah.map(item => `
+        <div class="mini-item">
+          <div class="mini-left">
+            <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
+            <div>
+              <strong>${escapeHtml(item.nama)}</strong>
+              <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
+            </div>
+          </div>
+          <div class="mini-time">${escapeHtml(item.waktu || "-")}</div>
+        </div>
+      `).join("") : `<div class="empty">Belum ada staff yang absen.</div>`;
+
+      belumBox.innerHTML = belum.length ? belum.map(item => `
+        <div class="mini-item">
+          <div class="mini-left">
+            <div class="avatar">${escapeHtml(getInitial(item.nama))}</div>
+            <div>
+              <strong>${escapeHtml(item.nama)}</strong>
+              <span>${escapeHtml(item.shift)} • ${escapeHtml(item.operator)}</span>
+            </div>
+          </div>
+          <div class="mini-time" style="color: var(--red);">BELUM</div>
+        </div>
+      `).join("") : `<div class="empty">Semua staff sudah absen.</div>`;
+    }
+
+    function updateLastUpdate() {
+      const now = new Date();
+
+      const text = now.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      document.getElementById("lastUpdate").textContent = text;
+    }
+
+    function renderDashboard() {
+      const filteredStaff = getFilteredStaff();
+
+      updateStats(currentData.staff);
+      renderMainTable(filteredStaff);
+      renderMiniLists(currentData.staff);
+      updateLastUpdate();
+    }
+
+    async function loadDashboardData() {
+      /*
+        Untuk saat ini kita pakai demoData.
+
+        Nanti kalau sudah konek Apps Script, bagian ini akan diganti
+        agar mengambil data dari Web App Apps Script.
+      */
+
+      currentData = demoData;
+      renderDashboard();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", renderDashboard);
+    document.getElementById("shiftFilter").addEventListener("change", renderDashboard);
+    document.getElementById("statusFilter").addEventListener("change", renderDashboard);
+
+    updateClock();
+    loadDashboardData();
+
+    setInterval(updateClock, 1000);
+    setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
+  </script>
+</body>
+</html>
