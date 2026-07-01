@@ -1163,12 +1163,6 @@
     setInterval(updateClock, 1000);
     setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
 
-    /* ============================================================
-       Proteksi ringan anti klik kanan / shortcut developer tools
-       Catatan: ini hanya menghambat orang awam.
-       Keamanan utama tetap PIN admin + sessionToken Apps Script.
-    ============================================================ */
-
     (function protectPageForBasicUsers() {
       function isTypingElement(el) {
         if (!el) return false;
