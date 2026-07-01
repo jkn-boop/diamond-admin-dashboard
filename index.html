@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>DIAMOND GRUP - Admin Dashboard</title>
 
   <style>
     :root {
       --bg-main: #020b07;
       --bg-card: rgba(0, 22, 13, 0.88);
-      --bg-card-2: rgba(0, 35, 18, 0.65);
       --border-green: rgba(124, 255, 0, 0.35);
       --green: #7cff00;
       --green-soft: rgba(124, 255, 0, 0.12);
       --red: #ff4d5d;
       --red-soft: rgba(255, 77, 93, 0.12);
       --yellow: #ffd34d;
-      --yellow-soft: rgba(255, 211, 77, 0.13);
       --blue: #4db8ff;
       --blue-soft: rgba(77, 184, 255, 0.12);
       --text-main: #ffffff;
@@ -42,6 +41,95 @@
         radial-gradient(circle at bottom center, rgba(124, 255, 0, 0.08), transparent 42%),
         var(--bg-main);
       padding: 22px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .login-screen {
+      min-height: calc(100vh - 44px);
+      display: grid;
+      place-items: center;
+    }
+
+    .login-card {
+      width: min(430px, 100%);
+      padding: 30px;
+      border-radius: 28px;
+      background: rgba(0, 18, 11, 0.92);
+      border: 1px solid var(--border-green);
+      box-shadow: 0 0 42px rgba(124, 255, 0, 0.22);
+      text-align: center;
+    }
+
+    .login-logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 18px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      background: rgba(124, 255, 0, 0.1);
+      border: 1px solid rgba(124, 255, 0, 0.45);
+      box-shadow: 0 0 26px rgba(124, 255, 0, 0.28);
+    }
+
+    .login-card h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .pin-input {
+      width: 100%;
+      height: 58px;
+      border-radius: 17px;
+      border: 1px solid rgba(124, 255, 0, 0.35);
+      background: rgba(0, 0, 0, 0.35);
+      color: #fff;
+      text-align: center;
+      font-size: 25px;
+      letter-spacing: 8px;
+      outline: none;
+      margin-bottom: 14px;
+    }
+
+    .pin-input:focus {
+      box-shadow: 0 0 18px rgba(124, 255, 0, 0.25);
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 56px;
+      border-radius: 17px;
+      border: 1px solid rgba(193, 255, 0, 0.72);
+      color: #fff;
+      background: linear-gradient(180deg, rgba(124,255,0,.92), rgba(30,150,22,.96) 48%, rgba(5,54,14,.98));
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 0 24px rgba(124, 255, 0, 0.30);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .login-error {
+      min-height: 22px;
+      margin-top: 14px;
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 800;
     }
 
     .app {
@@ -107,6 +195,17 @@
       font-weight: 800;
       font-size: 13px;
       box-shadow: var(--shadow-green);
+    }
+
+    .logout-btn {
+      border: 1px solid rgba(255, 77, 93, 0.35);
+      background: rgba(255, 77, 93, 0.10);
+      color: var(--red);
+      border-radius: var(--radius-pill);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
     }
 
     .dot {
@@ -370,12 +469,6 @@
       color: var(--blue);
     }
 
-    .pill-off {
-      background: var(--yellow-soft);
-      border: 1px solid rgba(255, 211, 77, 0.34);
-      color: var(--yellow);
-    }
-
     .side-stack {
       display: grid;
       gap: 18px;
@@ -488,12 +581,49 @@
       .button {
         width: 100%;
       }
+
+      .top-actions {
+        width: 100%;
+      }
+
+      .clock-box,
+      .live-badge,
+      .logout-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
+
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">🔐</div>
+      <h1>DIAMOND GRUP</h1>
+      <p>Masukkan PIN admin untuk membuka dashboard absensi.</p>
+
+      <input
+        id="pinInput"
+        class="pin-input"
+        type="password"
+        inputmode="numeric"
+        maxlength="12"
+        placeholder="••••••"
+        autocomplete="off"
+      />
+
+      <button id="loginBtn" class="login-btn" onclick="loginAdmin()">
+        MASUK DASHBOARD
+      </button>
+
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
+  <div id="dashboardApp" class="app hidden">
 
     <header class="topbar">
       <div class="brand">
@@ -510,6 +640,7 @@
           <span class="dot"></span>
           LOADING
         </div>
+        <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
       </div>
     </header>
 
@@ -631,8 +762,9 @@
 
   <script>
     const CONFIG = {
-      WEB_APP_URL: "https://script.google.com/macros/s/AKfycbxk5ITXyRMBMUkd5hL-Xq6QKdEvtgjHaihORahAr8sf2xAYhf_tj6POdLs-wbyXCik/exec",
-      AUTO_REFRESH_MS: 10000
+      WEB_APP_URL: "https://script.google.com/macros/s/AKfycbxfZ5_FLXMpJQk5ZDunDm4BN2-57eBsO3Ssa4BvPx6J2rEurf-6WDTFlrKyj_JpE75Q/exec",
+      AUTO_REFRESH_MS: 10000,
+      STORAGE_KEY: "DG_ADMIN_SESSION_TOKEN"
     };
 
     let currentData = {
@@ -645,6 +777,143 @@
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+    }
+
+    function getToken() {
+      return localStorage.getItem(CONFIG.STORAGE_KEY) || "";
+    }
+
+    function setToken(token) {
+      localStorage.setItem(CONFIG.STORAGE_KEY, token);
+    }
+
+    function clearToken() {
+      localStorage.removeItem(CONFIG.STORAGE_KEY);
+    }
+
+    function showLogin(message = "") {
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("dashboardApp").classList.add("hidden");
+      document.getElementById("loginError").textContent = message;
+    }
+
+    function showDashboard() {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("dashboardApp").classList.remove("hidden");
+    }
+
+    function setBadge(text) {
+      const badge = document.querySelector(".live-badge");
+      if (badge) {
+        badge.innerHTML = `<span class="dot"></span> ${escapeHtml(text)}`;
+      }
+    }
+
+    function jsonpRequest(url, params = {}) {
+      return new Promise((resolve, reject) => {
+        const callbackName =
+          "callbackDashboard_" +
+          Date.now() +
+          "_" +
+          Math.random().toString(36).slice(2);
+
+        const query = new URLSearchParams({
+          ...params,
+          callback: callbackName,
+          _: Date.now()
+        });
+
+        const script = document.createElement("script");
+        let done = false;
+
+        const timeout = setTimeout(() => {
+          if (done) return;
+          done = true;
+          cleanup();
+          reject(new Error("Request timeout. Apps Script terlalu lama merespons."));
+        }, 15000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[callbackName];
+
+          if (script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
+        }
+
+        window[callbackName] = function(response) {
+          if (done) return;
+          done = true;
+          cleanup();
+          resolve(response);
+        };
+
+        script.onerror = function() {
+          if (done) return;
+          done = true;
+          cleanup();
+          reject(new Error("Gagal menghubungi Apps Script."));
+        };
+
+        script.src = `${url}?${query.toString()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function loginAdmin() {
+      const pinInput = document.getElementById("pinInput");
+      const loginBtn = document.getElementById("loginBtn");
+      const loginError = document.getElementById("loginError");
+
+      const pin = pinInput.value.trim();
+
+      if (!pin) {
+        loginError.textContent = "Masukkan PIN admin terlebih dahulu.";
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "MEMERIKSA...";
+      loginError.textContent = "";
+
+      try {
+        const result = await jsonpRequest(CONFIG.WEB_APP_URL, {
+          action: "checkAdminPin",
+          pin: pin
+        });
+
+        if (!result || result.ok === false) {
+          throw new Error(result && result.error ? result.error : "PIN admin salah.");
+        }
+
+        setToken(result.token);
+        pinInput.value = "";
+        showDashboard();
+        loadDashboardData();
+
+      } catch (err) {
+        loginError.textContent = err.message || "Gagal login admin.";
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "MASUK DASHBOARD";
+      }
+    }
+
+    async function logoutAdmin() {
+      const token = getToken();
+
+      try {
+        if (token) {
+          await jsonpRequest(CONFIG.WEB_APP_URL, {
+            action: "logoutAdmin",
+            sessionToken: token
+          });
+        }
+      } catch (err) {}
+
+      clearToken();
+      showLogin("Anda sudah logout.");
     }
 
     function updateClock() {
@@ -660,14 +929,8 @@
         second: "2-digit"
       });
 
-      document.getElementById("clockText").textContent = text;
-    }
-
-    function setBadge(text) {
-      const badge = document.querySelector(".live-badge");
-      if (badge) {
-        badge.innerHTML = `<span class="dot"></span> ${escapeHtml(text)}`;
-      }
+      const clock = document.getElementById("clockText");
+      if (clock) clock.textContent = text;
     }
 
     function getInitial(name) {
@@ -794,56 +1057,26 @@
         currentData.updatedAt || new Date().toLocaleString("id-ID");
     }
 
-    function jsonpRequest(url) {
-      return new Promise((resolve, reject) => {
-        const callbackName = "callbackDashboard_" + Date.now() + "_" + Math.random().toString(36).slice(2);
-        const script = document.createElement("script");
-
-        let done = false;
-
-        const timeout = setTimeout(() => {
-          if (done) return;
-          done = true;
-          cleanup();
-          reject(new Error("Request timeout. Apps Script terlalu lama merespons."));
-        }, 15000);
-
-        function cleanup() {
-          clearTimeout(timeout);
-          delete window[callbackName];
-
-          if (script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
-        }
-
-        window[callbackName] = function(response) {
-          if (done) return;
-          done = true;
-          cleanup();
-          resolve(response);
-        };
-
-        script.onerror = function() {
-          if (done) return;
-          done = true;
-          cleanup();
-          reject(new Error("Gagal menghubungi Apps Script."));
-        };
-
-        script.src = `${url}?action=dashboardAdmin&callback=${callbackName}&_=${Date.now()}`;
-        document.body.appendChild(script);
-      });
-    }
-
     async function loadDashboardData() {
+      const token = getToken();
+
+      if (!token) {
+        showLogin("");
+        return;
+      }
+
       try {
         setBadge("LOADING");
 
-        const result = await jsonpRequest(CONFIG.WEB_APP_URL);
+        const result = await jsonpRequest(CONFIG.WEB_APP_URL, {
+          action: "dashboardAdmin",
+          sessionToken: token
+        });
 
         if (!result || result.ok === false) {
-          throw new Error(result && result.error ? result.error : "Data tidak valid.");
+          clearToken();
+          showLogin(result && result.error ? result.error : "Sesi admin habis. Silakan login ulang.");
+          return;
         }
 
         currentData = {
@@ -852,6 +1085,7 @@
         };
 
         setBadge("LIVE DATA");
+        showDashboard();
         renderDashboard();
 
       } catch (err) {
@@ -867,12 +1101,24 @@
       }
     }
 
+    document.getElementById("pinInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        loginAdmin();
+      }
+    });
+
     document.getElementById("searchInput").addEventListener("input", renderDashboard);
     document.getElementById("shiftFilter").addEventListener("change", renderDashboard);
     document.getElementById("statusFilter").addEventListener("change", renderDashboard);
 
     updateClock();
-    loadDashboardData();
+
+    if (getToken()) {
+      showDashboard();
+      loadDashboardData();
+    } else {
+      showLogin("");
+    }
 
     setInterval(updateClock, 1000);
     setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
