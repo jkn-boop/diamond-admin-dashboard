@@ -32,6 +32,22 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
+    html,
+    body {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      -webkit-user-select: auto;
+      user-select: auto;
+      -webkit-touch-callout: default;
+    }
+
     body {
       min-height: 100vh;
       color: var(--text-main);
@@ -41,6 +57,7 @@
         radial-gradient(circle at bottom center, rgba(124, 255, 0, 0.08), transparent 42%),
         var(--bg-main);
       padding: 22px;
+      overflow-x: hidden;
     }
 
     .hidden {
@@ -535,6 +552,27 @@
       color: var(--green);
     }
 
+    .basic-protect-message {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      z-index: 999999;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(0, 18, 11, 0.96);
+      border: 1px solid rgba(124, 255, 0, 0.45);
+      color: #7cff00;
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 0 24px rgba(124, 255, 0, 0.25);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      text-align: center;
+      max-width: calc(100% - 28px);
+    }
+
     @media (max-width: 1080px) {
       .grid-stats {
         grid-template-columns: repeat(2, 1fr);
@@ -759,6 +797,8 @@
     </footer>
 
   </div>
+
+  <div id="basicProtectMessage" class="basic-protect-message"></div>
 
   <script>
     const CONFIG = {
@@ -1122,6 +1162,91 @@
 
     setInterval(updateClock, 1000);
     setInterval(loadDashboardData, CONFIG.AUTO_REFRESH_MS);
+
+    /* ============================================================
+       Proteksi ringan anti klik kanan / shortcut developer tools
+       Catatan: ini hanya menghambat orang awam.
+       Keamanan utama tetap PIN admin + sessionToken Apps Script.
+    ============================================================ */
+
+    (function protectPageForBasicUsers() {
+      function isTypingElement(el) {
+        if (!el) return false;
+
+        const tag = String(el.tagName || "").toLowerCase();
+
+        return (
+          tag === "input" ||
+          tag === "textarea" ||
+          tag === "select" ||
+          tag === "button" ||
+          el.isContentEditable
+        );
+      }
+
+      let protectTimer = null;
+
+      function showBasicProtectMessage(text) {
+        const box = document.getElementById("basicProtectMessage");
+        if (!box) return;
+
+        box.textContent = text;
+        box.style.opacity = "1";
+
+        clearTimeout(protectTimer);
+
+        protectTimer = setTimeout(function() {
+          box.style.opacity = "0";
+        }, 1600);
+      }
+
+      document.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+        showBasicProtectMessage("Klik kanan dinonaktifkan.");
+      });
+
+      document.addEventListener("dragstart", function(e) {
+        e.preventDefault();
+      });
+
+      document.addEventListener("selectstart", function(e) {
+        if (isTypingElement(e.target)) return;
+        e.preventDefault();
+      });
+
+      document.addEventListener("copy", function(e) {
+        if (isTypingElement(e.target)) return;
+        e.preventDefault();
+        showBasicProtectMessage("Copy dinonaktifkan.");
+      });
+
+      document.addEventListener("cut", function(e) {
+        if (isTypingElement(e.target)) return;
+        e.preventDefault();
+        showBasicProtectMessage("Cut dinonaktifkan.");
+      });
+
+      document.addEventListener("keydown", function(e) {
+        const key = String(e.key || "").toUpperCase();
+
+        const blocked =
+          e.key === "F12" ||
+          (e.ctrlKey && key === "U") ||
+          (e.ctrlKey && key === "S") ||
+          (e.ctrlKey && key === "P") ||
+          (e.ctrlKey && e.shiftKey && key === "I") ||
+          (e.ctrlKey && e.shiftKey && key === "J") ||
+          (e.ctrlKey && e.shiftKey && key === "C") ||
+          (e.metaKey && e.altKey && key === "I");
+
+        if (blocked) {
+          e.preventDefault();
+          e.stopPropagation();
+          showBasicProtectMessage("Akses ini dinonaktifkan.");
+          return false;
+        }
+      });
+    })();
   </script>
 </body>
 </html>
